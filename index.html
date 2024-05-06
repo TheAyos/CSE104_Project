@@ -1,15 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Proje</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+
     <main>
+        <fieldset class="control-panel">
+            <legend>Select a cell type to paint:</legend>
+
+            <div>
+                <input type="radio" id="start" name="cell_type" value="start" checked="true" />
+                <label for="start">Starting point</label>
+            </div>
+
+            <div>
+                <input type="radio" id="end" name="cell_type" value="end" />
+                <label for="end">Ending point</label>
+            </div>
+
+            <div>
+                <input type="radio" id="obstacle" name="cell_type" value="obstacle" />
+                <label for="obstacle">Obstacle</label>
+            </div>
+
+            <div>
+                <input type="range" id="cell_size" name="cell_size" value=42 min=20 max=80 />
+                <label for="cell_size">Cell size</label>
+            </div>
+
+            <div>
+                <button onclick="initControls();initGrid()">Clear grid</button>
+            </div>
+
+        </fieldset>
+
+
         <canvas id="here"></canvas>
     </main>
+
     <script src="./script.js" defer></script>
 </body>
+
 </html>
