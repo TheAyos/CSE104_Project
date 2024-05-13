@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Proje</title>
     <link rel="stylesheet" href="style.css">
+    <script type="module" src="./script.js" defer></script>
 </head>
 
 <body>
@@ -35,7 +36,7 @@
             </div>
 
             <div>
-                <button onclick="initControls();initGrid()">Clear grid</button>
+                <button id="btn_clear_grid">Clear grid</button> (press C)
             </div>
 
         </fieldset>
@@ -44,7 +45,207 @@
         <canvas id="here"></canvas>
     </main>
 
-    <script src="./script.js" defer></script>
+    <!-- <script defer>
+        const canvas = document.getElementById('here');
+        canvas.width = 800;
+        canvas.height = 800;
+        
+        const ctx = canvas.getContext('2d');
+        
+        class Spot {
+            constructor(x, y) {
+                this.i = x;
+                this.j = y;
+                this.f = 0;
+                this.g = 0;
+                this.h = 0;
+                this.neighbors = [];
+                this.previous = null;
+                this.obs = false;
+                this.value = 1;
+            }
+        
+            show(color, st) {
+                // if (!this.closed) {
+                    console.log("drawing rect at", this.i * w, this.j * h, w, h)
+                    ctx.fillStyle = color;
+                    ctx.fillRect(this.i * w, this.j * h, w, h);
+                // }
+            }
+        
+            path(color, st) {
+                ctx.fillStyle = color;
+                ctx.fillRect(this.i * w, this.j * h, w, h);
+            }
+        
+            addNeighbors(grid) {
+                const i = this.i;
+                const j = this.j;
+                if (i < cols - 1 && !grid[this.i + 1][j].obs) {
+                    this.neighbors.push(grid[this.i + 1][j]);
+                }
+                if (i > 0 && !grid[this.i - 1][j].obs) {
+                    this.neighbors.push(grid[this.i - 1][j]);
+                }
+                if (j < row - 1 && !grid[this.i][j + 1].obs) {
+                    this.neighbors.push(grid[this.i][j + 1]);
+                }
+                if (j > 0 && !grid[this.i][j - 1].obs) {
+                    this.neighbors.push(grid[this.i][j - 1]);
+                }
+            }
+        }
+        
+        const cols = 50;
+        const row = 50; // Declare row here
+        const grid = new Array(cols).fill(null).map(() => new Array(row));
+        const openSet = [];
+        const closedSet = [];
+        const red = '#FF0000';
+        const green = '#00FF00';
+        const blue = '#0000FF';
+        const grey = '#DCDCDC';
+        const w = 800 / cols;
+        const h = 800 / row;
+        
+        for (let i = 0; i < cols; i++) {
+            grid[i] = new Array(row);
+        }
+        
+        for (let i = 0; i < cols; i++) {
+            for (let j = 0; j < row; j++) {
+                grid[i][j] = new Spot(i, j);
+            }
+        }
+        
+        const start = grid[12][5];
+        const end = grid[3][6];
+        
+        for (let i = 0; i < cols; i++) {
+            for (let j = 0; j < row; j++) {
+                grid[i][j].show('#FFFFFF', 1);
+            }
+        }
+        
+        for (let i = 0; i < row; i++) {
+            grid[0][i].show(grey, 0);
+            grid[0][i].obs = true;
+            grid[cols - 1][i].obs = true;
+            grid[cols - 1][i].show(grey, 0);
+            grid[i][row - 1].show(grey, 0);
+            grid[i][0].show(grey, 0);
+            grid[i][0].obs = true;
+            grid[i][row - 1].obs = true;
+        }
+        
+        function mousePress(x) {
+            const t = x.clientX;
+            const w = x.clientY;
+            const g1 = Math.floor(t / (800 / cols));
+            const g2 = Math.floor(w / (800 / row));
+            const access = grid[g1][g2];
+            if (access !== start && access !== end) {
+                if (!access.obs) {
+                    console.log(access) 
+                    access.obs = true;
+                    access.show('#00FFFF', 0);
+                }
+            }
+        }
+        
+        document.addEventListener('mousedown', function (e) {
+            const pos = {
+                clientX: e.clientX - canvas.getBoundingClientRect().left,
+                clientY: e.clientY - canvas.getBoundingClientRect().top
+            };
+            mousePress(pos);
+        });
+        
+        end.show('#FF087F', 0);
+        start.show('#FF087F', 0);
+        
+        let loop = true;
+        document.addEventListener('keydown', function (event) {
+            if (event.key === ' ') {
+                // loop = false;
+            }
+        });
+        
+        function heuristic(n, e) {
+            const d = Math.sqrt((n.i - e.i) ** 2 + (n.j - e.j) ** 2);
+            return d;
+        }
+        
+        function main() {
+            end.show('#FF087F', 0);
+            start.show('#FF087F', 0);
+            if (openSet.length > 0) {
+                let lowestIndex = 0;
+                for (let i = 0; i < openSet.length; i++) {
+                    if (openSet[i].f < openSet[lowestIndex].f) {
+                        lowestIndex = i;
+                    }
+                }
+        
+                const current = openSet[lowestIndex];
+                if (current === end) {
+                    console.log('done', current.f);
+                    start.show('#FF087F', 0);
+                    let temp = current.f;
+                    for (let i = 0; i < Math.round(current.f); i++) {
+                        current.closed = false;
+                        current.show('#0000FF', 0);
+                        current = current.previous;
+                    }
+                    end.show('#FF087F', 0);
+                    const result = console.log(`The program finished, the shortest distance to the path is ${temp} blocks away. Would you like to re-run the program?`);
+                    if (result === true) {
+                        location.reload();
+                    } else {
+                        let ag = true;
+                        document.addEventListener('keydown', function (event) {
+                            ag = false;
+                        });
+                    }
+                }
+        
+                openSet.splice(lowestIndex, 1);
+                closedSet.push(current);
+        
+                const neighbors = current.neighbors;
+                for (let i = 0; i < neighbors.length; i++) {
+                    const neighbor = neighbors[i];
+                    if (!closedSet.includes(neighbor)) {
+                        const tempG = current.g + current.value;
+                        if (openSet.includes(neighbor)) {
+                            if (neighbor.g > tempG) {
+                                neighbor.g = tempG;
+                            }
+                        } else {
+                            neighbor.g = tempG;
+                            openSet.push(neighbor);
+                        }
+                    }
+                    neighbor.h = heuristic(neighbor, end);
+                    neighbor.f = neighbor.g + neighbor.h;
+                    if (neighbor.previous === null) {
+                        neighbor.previous = current;
+                    }
+                }
+            }
+        }
+        
+        function animate() {
+            main();
+            if (loop) {
+                requestAnimationFrame(animate);
+            }
+        }
+        
+        animate();
+        
+            </script> -->
+
 </body>
 
 </html>
