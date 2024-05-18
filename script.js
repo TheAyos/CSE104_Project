@@ -1,5 +1,9 @@
 "use strict;";
 
+import { bfs } from "./algorithms.js";
+
+export { CellType };
+
 const CellType = {
     FREE: "free",
     START: "start",
@@ -18,25 +22,12 @@ CellType._COLORS = {
     path: "rgba(212, 115, 212,0.3)",
 };
 
-export { CellType };
-
-// import { initGrid, drawGridUnit, bfs } from "./helper.js";
-import { bfs } from "./algorithms.js";
-
-// const MIN_CELL_SIZE = 20; // used to create array representing the cells (chose constant size for performance reasons)
-// let cellSize = 42; // maybe use dict if conflict
-
 //TODO: fix bugs in input state variables when alt-tabbing from the window
 
 let isMouseDown = false;
 let isShiftDown = false;
-
 let isStartSet = false;
 let isEndSet = false;
-
-// matrix : level 1 is y
-//          level 2 is x
-// at [y][x] contains {type: /CellType.OBSTACLE, CellType.FREE, CellType.START, "finish"/}
 
 const canvas = document.getElementById("grid");
 const ctx = canvas.getContext("2d");
@@ -48,6 +39,7 @@ const clearBtn = document.getElementById("btn_clear_grid");
 const getActiveRadio = () => document.querySelector('.control-panel>div>input[name="cell_type"]:checked');
 
 const cellSizeSlider = document.querySelector('.control-panel>div>input[name="cell_size"]');
+cellSizeSlider.addEventListener("change", () => grid.setPixelSize(getCellSize()));
 const getCellSize = () => cellSizeSlider.value;
 
 //TODO: add current mouse pos+selected cell type hover highlight on grid
@@ -55,7 +47,6 @@ const getCellSize = () => cellSizeSlider.value;
 class Cell {
     constructor(canvas, i, j, size, type = CellType.FREE) {
         this.ctx = canvas.getContext("2d");
-
         this.y = i * size; // row direction
         this.x = j * size; // column direction
         this.size = size;
@@ -66,14 +57,12 @@ class Cell {
         if (this.type === CellType.FREE) return;
 
         if (!Object.values(CellType).includes(this.type)) {
-            console.log("[ERROR]: using unrecognized CellType");
+            console.log(`[ERROR]: using unrecognized CellType :${this.type}`);
             return;
         }
 
         this.ctx.beginPath();
-
         this.ctx.fillStyle = CellType._COLORS[this.type] || "black";
-
         this.ctx.fillRect(this.x, this.y, this.size, this.size);
         this.ctx.closePath();
     }
@@ -92,11 +81,26 @@ class Grid {
         this.startPixel = null;
         this.endPixel = null;
 
+        this.resetControls();
         this.clearGrid();
     }
 
+    resetControls() {
+        // reset control panel state
+
+        this.startPixel = null; // FIXME
+        // isStartSet = false;
+
+        startRadio.disabled = false;
+        startRadio.checked = true;
+
+        endRadio.disabled = false;
+        // isEndSet = false;
+        this.endPixel = null;
+    }
+
     clearGrid() {
-        initControls();
+        this.resetControls();
 
         this.pixelArray = [];
 
@@ -176,7 +180,8 @@ class Grid {
     }
 }
 
-const grid = new Grid(canvas, 9, 16, 20);
+// arbitrary size, real size computed by handleResize() in init()
+const grid = new Grid(canvas, 32, 32, 20);
 
 init();
 
@@ -212,25 +217,13 @@ function mainDraw() {
 function init() {
     handleResize();
 
-    initControls();
-    // pixelArray = initGrid(pixelArray, canvas, getCellSize());
     initEvents();
 
     mainDraw();
 }
 
-function initControls() {
-    // reset control panel state
-    isStartSet = false;
-    startRadio.disabled = false;
-    startRadio.checked = true;
-
-    endRadio.disabled = false;
-    isEndSet = false;
-}
-
 function initEvents() {
-    window.addEventListener("resize", handleResize);
+    window.addEventListener("resize", debouncedResize);
 
     window.addEventListener("mouseup", handleMouse);
     window.addEventListener("mousedown", handleMouse);
@@ -245,10 +238,15 @@ function initEvents() {
     window.addEventListener("keyup", handleKeys);
 
     clearBtn.addEventListener("click", grid.clearGrid);
+}
 
-    cellSizeSlider.addEventListener("change", () => {
-        grid.clearGrid();
-    });
+let resizeTimeout;
+
+function debouncedResize() {
+    // don't start resizing grid until user has stopped resizing window
+    // eliminates lag during resizing
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(handleResize, 25);
 }
 
 function handleResize() {
@@ -305,37 +303,52 @@ function handleMouse(e) {
     if (!isMouseDown) return;
 
     const currentPixel = grid.getPixelFromWindowCoords(e.clientX, e.clientY);
-    if (!currentPixel) return; // mouse out of grid
+
+    // mouse out of grid
+    if (!currentPixel) return;
 
     if (isShiftDown) {
         if (currentPixel.type === CellType.START) {
-            isStartSet = false;
+            // isStartSet = false;
+            grid.startPixel = null;
             startRadio.disabled = false;
         } else if (currentPixel.type === CellType.END) {
-            isEndSet = false;
+            // isEndSet = false;
+            grid.endPixel = null;
             endRadio.disabled = false;
         }
         currentPixel.type = CellType.FREE;
         return;
     }
 
-    if (currentPixel.type === CellType.START || currentPixel.type === CellType.END) return; // do not override start and end
+    // do not override start and end
+    if (currentPixel.type === CellType.START || currentPixel.type === CellType.END) return;
 
     const radioType = getActiveRadio().value;
 
     // paint cell type
     if (radioType === CellType.START) {
-        if (!isStartSet) {
+        if (!grid.startPixel) {
+            //isStartSet) {
             currentPixel.type = radioType;
-            isStartSet = true;
+            // isStartSet = true;
+
+            currentPixel.type = CellType.START;
+            grid.startPixel = currentPixel;
+
             startRadio.disabled = true;
             // WATCH OUT, list could be empty (ok as long as i don't disable the obstacle radio)
             document.querySelectorAll('.control-panel>div>input[name="cell_type"]:not(:checked):not(:disabled)')[0].checked = true;
         }
     } else if (radioType === CellType.END) {
-        if (!isEndSet) {
+        if (!grid.endPixel) {
+            //isEndSet) {
             currentPixel.type = radioType;
-            isEndSet = true;
+            // isEndSet = true;
+
+            currentPixel.type = CellType.END;
+            grid.endPixel = currentPixel;
+
             endRadio.disabled = true;
             // WATCH OUT, list could be empty (ok as long as i don't disable the obstacle radio)
             document.querySelectorAll('.control-panel>div>input[name="cell_type"]:not(:checked):not(:disabled)')[0].checked = true;
