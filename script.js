@@ -50,34 +50,6 @@ const getActiveRadio = () => document.querySelector('.control-panel>div>input[na
 const cellSizeSlider = document.querySelector('.control-panel>div>input[name="cell_size"]');
 const getCellSize = () => cellSizeSlider.value;
 
-function drawGridUnit(ctx, x, y, size, type) {
-    // separate function should allow for easy rendering customization
-    ctx.beginPath();
-
-    // draw grid
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = "1";
-    ctx.strokeRect(x, y, x + size, y + size);
-
-    // console.log("here");
-
-    if (type !== CellType.FREE) {
-        if (type === CellType.OBSTACLE) {
-            ctx.fillStyle = "rgba(0,0,255,0.3)";
-        } else if (type === CellType.START) {
-            ctx.fillStyle = "rgba(0,255,0,0.3)";
-        } else if (type === CellType.END) {
-            ctx.fillStyle = "rgba(255,0,0,0.3)";
-        } else if (type === CellType.VISITED) {
-            ctx.fillStyle = "rgba(166, 172, 175,0.3)";
-        } else if (type === CellType.PATH) {
-            ctx.fillStyle = "rgba(212 , 115 , 212,0.3)";
-        }
-        ctx.fillRect(x, y, size, size);
-    }
-    ctx.closePath();
-}
-
 //TODO: add current mouse pos+selected cell type hover highlight on grid
 
 class Cell {
@@ -102,17 +74,6 @@ class Cell {
 
         this.ctx.fillStyle = CellType._COLORS[this.type] || "black";
 
-        // if (this.type === CellType.OBSTACLE) {
-        //     this.ctx.fillStyle = "rgba(0,0,255,0.3)";
-        // } else if (this.type === CellType.START) {
-        //     this.ctx.fillStyle = "rgba(0,255,0,0.3)";
-        // } else if (this.type === CellType.END) {
-        //     this.ctx.fillStyle = "rgba(255,0,0,0.3)";
-        // } else if (this.type === CellType.VISITED) {
-        //     this.ctx.fillStyle = "rgba(166, 172, 175,0.3)";
-        // } else if (this.type === CellType.PATH) {
-        //     this.ctx.fillStyle = "rgba(212, 115, 212,0.3)";
-        // }
         this.ctx.fillRect(this.x, this.y, this.size, this.size);
         this.ctx.closePath();
     }
@@ -149,6 +110,13 @@ class Grid {
 
     setStart() {}
     setEnd() {}
+
+    setGridSize(rows, cols) {
+        this.rows = rows;
+        this.cols = cols;
+
+        this.clearGrid();
+    }
 
     setPixelSize(x) {
         this.pixelSize = x;
@@ -203,7 +171,6 @@ class Grid {
         for (let i = 0; i < this.rows; i++) {
             for (let j = 0; j < this.cols; j++) {
                 this.pixelArray[i][j].draw();
-                // drawGridUnit(this.ctx, x * this.cellSize, y * this.cellSize, this.pixelSize, this.pixelArray[y][x].type);
             }
         }
     }
@@ -234,8 +201,10 @@ init();
 // }
 
 function mainDraw() {
+    // background
     ctx.fillStyle = "rgba(255,255,255,0.1)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     grid.draw();
     requestAnimationFrame(mainDraw);
 }
@@ -296,7 +265,7 @@ function handleResize() {
     let rows = Math.floor(canvas.height / getCellSize());
     let cols = Math.floor(canvas.width / getCellSize());
 
-    grid.clearGrid();
+    grid.setGridSize(rows, cols);
 }
 
 function handleKeys(e) {
