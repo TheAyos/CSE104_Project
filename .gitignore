@@ -2,4 +2,6 @@
 !index.html
 !script.js
 !style.css
-!helper.js
+!Grid.js
+!Cell.js
+!algorithms.js

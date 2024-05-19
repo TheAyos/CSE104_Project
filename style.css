@@ -13,5 +13,15 @@ main {
 }
 
 canvas {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
     border: 5px dashed greenyellow;
+}
+
+fieldset {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    border: 5px dashed coral;
 }

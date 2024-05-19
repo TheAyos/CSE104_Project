@@ -34,9 +34,12 @@
                 <input type="range" id="cell_size" name="cell_size" value=42 min=20 max=80 />
                 <label for="cell_size">Cell size</label>
             </div>
-
             <div>
                 <button id="btn_clear_grid">Clear grid</button> (press C)
+            </div>
+
+            <div>
+                <button id="btn_clear_path">Clear path</button> (press V)
             </div>
 
             <label for="algorithm">Select an algorithm:</label>
@@ -46,6 +49,12 @@
                 <option value="dijkstra">Dijkstra</option>
                 <option value="astar">A*</option>
             </select>
+
+            <div>
+                <input type="range" id="algo_speed" name="algo_speed" value=10 min=1 max=30 />
+                <label for="algo_speed">Speed</label>
+            </div>
+
         </fieldset>
 
 
