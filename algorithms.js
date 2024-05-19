@@ -1,145 +1,147 @@
+"use strict;";
+
 import { CellType } from "./Cell.js";
 
 export { bfsdfs, dijkstra };
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function bfsdfs(grid, dfs = false) {
-    // bottom right up left  --- [dY, dX]
-    const neighborVectors = [
-        [0, -1],
-        [1, 0],
-        [0, 1],
-        [-1, 0],
-    ];
-    const queue = [grid.startPixel];
-
-    let totalVisited = 0;
-
-    let found = false;
-    while (queue.length != 0 && !found && grid.runningPathfinding) {
-        totalVisited++;
-        // var to access outside of the while
-        var currentPixel;
-        if (dfs) currentPixel = queue.pop();
-        else currentPixel = queue.shift();
-
-        // sanity checks
-        if (currentPixel.type === CellType.VISITED) continue;
-        if (currentPixel.type === CellType.OBSTACLE) continue;
-
-        // reconstruct path if done
-        if (currentPixel.type === CellType.END) {
-            found = true;
-            break;
-        }
-
-        currentPixel.type = CellType.VISITED;
-
-        // queue/stack next neighbors
-        for (let k = 0; k < 4; k++) {
-            let nextI = currentPixel.i + neighborVectors[k][0];
-            let nextJ = currentPixel.j + neighborVectors[k][1];
-
-            // only add legal neighbors
-            if (nextI < 0 || nextJ < 0 || nextI > grid.rows - 1 || nextJ > grid.cols - 1) continue;
-
-            const child = grid.pixelArray[nextI][nextJ];
-
-            if (child.type !== CellType.VISITED && child.type !== CellType.OBSTACLE && !child.pathParent) {
-                child.pathParent = currentPixel;
-                queue.push(child);
-            }
-        }
-
-        await sleep(grid.algoSpeed);
-    }
-    if (!found) return false;
-
-    let pathLength = 0;
-    let current = currentPixel;
-    while (current && current.pathParent) {
-        pathLength++;
-        current.type = CellType.PATH;
-        current = current.pathParent;
+class Stack {
+    #stack; // private
+    constructor(initElts = []) {
+        this.#stack = initElts;
     }
 
-    grid.startPixel.type = CellType.START;
-    grid.endPixel.type = CellType.END;
+    isEmpty() {
+        return this.#stack.length === 0;
+    }
 
-    return [true, pathLength, totalVisited]; // found path //FIXME: clean exit tho ?
+    push(x) {
+        this.#stack.push(x);
+    }
+
+    pop() {
+        // LIFO: remove and return the last added element
+        if (this.isEmpty()) throw new Error("Stack is empty");
+        return this.#stack.pop();
+    }
 }
 
-async function dijkstra(grid) {
-    //left bottom right up  --- [dY, dX]
-    const neighborVectors = [
-        [1, 0],
-        [0, -1],
-        [-1, 0],
-        [0, 1],
-    ];
-    // //left bottom right up  --- [dY, dX]
-    // const neighborVectors = [
-    //     [0, -1],
-    //     [1, 0],
-    //     [0, 1],
-    //     [-1, 0],
-    // ];
-    const queue = [grid.startPixel];
+class Queue {
+    #queue; // private
+    constructor(initElts = []) {
+        this.#queue = initElts;
+    }
 
-    let totalVisited = 0;
+    isEmpty() {
+        return this.#queue.length === 0;
+    }
+
+    push(x) {
+        this.#queue.push(x);
+    }
+
+    pop() {
+        // FIFO: remove and return the first added element
+        if (this.isEmpty()) throw new Error("Queue is empty");
+        return this.#queue.shift();
+    }
+}
+
+function reconstructAndVisualizePath(grid) {
+    // /!\ assumes that a path has been found (uses pixel.pathParent)
+    const path = [];
+    let currentPixel = grid.endPixel;
+
+    while (!!currentPixel && !!currentPixel.pathParent) {
+        path.unshift(currentPixel);
+        currentPixel.type = CellType.PATH;
+        currentPixel = currentPixel.pathParent;
+    }
+
+    grid.startPixel.type = CellType.START;
+    grid.endPixel.type = CellType.END;
+    return path;
+}
+
+async function bfsdfs(grid, dfs = false) {
+    const visited = [],
+        toVisit = new (dfs ? Stack : Queue)();
+    toVisit.push(grid.startPixel);
 
     let found = false;
-    while (queue.length != 0 && !found && grid.runningPathfinding) {
-        totalVisited++;
+    while (!toVisit.isEmpty() != 0 && !found && grid.runningPathfinding) {
         // var to access outside of the while
-        var currentPixel;
-        if (dfs) currentPixel = queue.pop();
-        else currentPixel = queue.shift();
+        // pop behaves according to data structure (dfs:stack & bfs:queue)
+        var currentPixel = toVisit.pop();
 
         // sanity checks
         if (currentPixel.type === CellType.VISITED) continue;
         if (currentPixel.type === CellType.OBSTACLE) continue;
 
         // reconstruct path if done
-        if (currentPixel.type === CellType.END) {
-            found = true;
-            break;
-        }
+        if (currentPixel.type === CellType.END) found = true;
 
         currentPixel.type = CellType.VISITED;
-        // currentPixel.pathParent = parent;
+        visited.push(currentPixel);
 
-        // queue/stack next neighbors
-        for (let k = 0; k < 4; k++) {
-            let nextI = currentPixel.i + neighborVectors[k][0];
-            let nextJ = currentPixel.j + neighborVectors[k][1];
-
-            // only add legal neighbors
-            if (nextI < 0 || nextJ < 0 || nextI > grid.rows - 1 || nextJ > grid.cols - 1) continue;
-
-            const child = grid.pixelArray[nextI][nextJ];
-
+        // process next neighbors
+        for (const child of currentPixel.legalNeighbors) {
             if (child.type !== CellType.VISITED && child.type !== CellType.OBSTACLE && !child.pathParent) {
                 child.pathParent = currentPixel;
-                queue.push(child);
+                toVisit.push(child);
             }
+        }
+        await sleep(grid.algoSpeed);
+    }
+    if (!found) return [false];
+
+    const path = reconstructAndVisualizePath(grid);
+    return [true, path, visited];
+}
+
+// TODO: further improvement: implement heap data structure instead of sorting
+async function dijkstra(grid) {
+    grid.startPixel.distance = 0;
+
+    const visited = [],
+        toVisit = [];
+    for (const row of grid.pixelArray) for (const pixel of row) toVisit.push(pixel);
+
+    let found = false;
+    while (toVisit.length && !found && grid.runningPathfinding) {
+        // sort by ascending distance to choose next pixel to visit
+        toVisit.sort((x, y) => x.distance - y.distance);
+
+        // var to access outside of the while
+        var closestPixel = toVisit.shift();
+
+        // sanity checks
+        // if (closestPixel.type === CellType.VISITED) continue;
+        if (closestPixel.type === CellType.OBSTACLE) continue;
+
+        // nothing left to explore
+        if (closestPixel.distance === Infinity) return false;
+
+        closestPixel.type = CellType.VISITED;
+        visited.push(closestPixel);
+
+        if (closestPixel === grid.endPixel) found = true;
+
+        // update neighbors' distances according to dijkstra's logic
+        for (const child of closestPixel.legalNeighbors) {
+            if (child.type === CellType.VISITED) continue;
+
+            child.distance = closestPixel.distance + child.j; // WEIGHT IS 1111111 //TODO: add weighted nodes
+            child.pathParent = closestPixel;
         }
 
         await sleep(grid.algoSpeed);
     }
-    if (!found) return false;
 
-    let pathLength = 0;
-    let current = currentPixel;
-    while (current && current.pathParent) {
-        pathLength++;
-        current.type = CellType.PATH;
-        current = current.pathParent;
-    }
+    if (!found) return [false];
 
-    grid.startPixel.type = CellType.START;
-    grid.endPixel.type = CellType.END;
+    const path = reconstructAndVisualizePath(grid);
 
-    return [true, pathLength, totalVisited]; // found path //FIXME: clean exit tho ?
+    return [true, path, visited];
 }

@@ -1,3 +1,5 @@
+"use strict;";
+
 export const CellType = {
     FREE: "free",
     START: "start",
@@ -17,8 +19,10 @@ CellType._COLORS = {
 };
 
 export class Cell {
-    constructor(canvas, i, j, size, type = CellType.FREE) {
-        this.ctx = canvas.getContext("2d");
+    constructor(grid, i, j, size, type = CellType.FREE) {
+        this.ctx = grid.canvas.getContext("2d");
+        this.grid = grid;
+
         this.i = i;
         this.j = j;
         this.size = size;
@@ -26,6 +30,7 @@ export class Cell {
 
         // pathfinding-related
         this.pathParent = null;
+        this.distance = Infinity; // for dijkstra
     }
 
     get y() {
@@ -33,6 +38,23 @@ export class Cell {
     }
     get x() {
         return this.j * this.size;
+    }
+
+    get legalNeighbors() {
+        // bottom right up left  --- [dY, dX] --- [dI, dJ]
+        const neighborVectors = [[0, -1], [1, 0], [0, 1], [-1, 0]]; // prettier-ignore
+
+        const n = [];
+        for (let k = 0; k < 4; k++) {
+            let nI = this.i + neighborVectors[k][0];
+            let nJ = this.j + neighborVectors[k][1];
+
+            // only add legal neighbors
+            if (nI < 0 || nJ < 0 || nI > this.grid.rows - 1 || nJ > this.grid.cols - 1) continue;
+
+            n.push(this.grid.pixelArray[nI][nJ]);
+        }
+        return n;
     }
 
     draw() {

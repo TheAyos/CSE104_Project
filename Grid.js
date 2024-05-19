@@ -1,5 +1,6 @@
-import { startRadio, endRadio } from "./script.js";
+"use strict;";
 
+import { startRadio, endRadio, handleResize } from "./script.js";
 import { Cell, CellType } from "./Cell.js";
 
 export class Grid {
@@ -23,61 +24,59 @@ export class Grid {
 
     // reset control panel state
     resetControls() {
-        this.startPixel = null; // FIXME
-        // isStartSet = false;
+        this.startPixel = null;
 
         startRadio.disabled = false;
         startRadio.checked = true;
 
         endRadio.disabled = false;
-        // isEndSet = false;
         this.endPixel = null;
     }
 
-    clearGrid() {
+    clearGrid(pathOnly = false) {
         this.runningPathfinding = false;
-        this.resetControls();
 
-        this.pixelArray = [];
+        if (!pathOnly) this.resetControls();
 
+        const newPixelArray = [];
+
+        // FIXME: don't clear obstacles on clearPath !!!
         for (let i = 0; i < this.rows; i++) {
-            this.pixelArray.push([]);
+            newPixelArray.push([]);
             for (let j = 0; j < this.cols; j++) {
-                this.pixelArray[i].push(new Cell(this.canvas, i, j, this.pixelSize, CellType.FREE));
+                newPixelArray[i].push(new Cell(this, i, j, this.pixelSize, CellType.FREE));
             }
+        }
+
+        this.pixelArray = newPixelArray;
+
+        if (pathOnly) {
+            if (this.startPixel) this.pixelArray[this.startPixel.i][this.startPixel.j] = this.startPixel;
+            if (this.endPixel) this.pixelArray[this.endPixel.i][this.endPixel.j] = this.endPixel;
+        } else {
+            this.startPixel = null;
+            this.endPixel = null;
         }
 
         console.log("[clearGrid] just created a pixelArray of size", this.pixelArray.length, this.pixelArray[0].length);
     }
 
     clearPath() {
-        this.runningPathfinding = false;
-
-        this.pixelArray = [];
-
-        for (let i = 0; i < this.rows; i++) {
-            this.pixelArray.push([]);
-            for (let j = 0; j < this.cols; j++) {
-                this.pixelArray[i].push(new Cell(this.canvas, i, j, this.pixelSize, CellType.FREE));
-            }
-        }
-
-        this.pixelArray[this.startPixel.i][this.startPixel.j] = this.startPixel;
-        this.pixelArray[this.endPixel.i][this.endPixel.j] = this.endPixel;
+        this.clearGrid(true);
     }
 
     setStart(currentPixel) {
         currentPixel.type = CellType.START;
         this.startPixel = currentPixel;
         startRadio.disabled = true;
-        // WATCH OUT, list could be empty (ok as long as i don't disable the obstacle radio)
+        // FIXME: WATCH OUT, list could be empty (ok as long as i don't disable the obstacle radio)
         document.querySelectorAll('.control-panel>div>input[name="cell_type"]:not(:checked):not(:disabled)')[0].checked = true;
     }
     setEnd(currentPixel) {
         currentPixel.type = CellType.END;
         this.endPixel = currentPixel;
         endRadio.disabled = true;
-        // WATCH OUT, list could be empty (ok as long as i don't disable the obstacle radio)
+        // FIXME: WATCH OUT, list could be empty (ok as long as i don't disable the obstacle radio)
         document.querySelectorAll('.control-panel>div>input[name="cell_type"]:not(:checked):not(:disabled)')[0].checked = true;
     }
     setFree(currentPixel) {

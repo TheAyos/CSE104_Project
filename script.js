@@ -7,88 +7,111 @@
 // TODO: add current mouse pos+selected cell type hover highlight on grid ???
 // TODO: maybe add frontier viz(nodes in queue)
 
+// nicetodo:
+// xtra, less prio:
+// TODO: add weights with 12356 pressing while painting for weighted algos
+
+/* -------------------------------------------------------------------------- */
+/*                                  todo next                                 */
+/* -------------------------------------------------------------------------- */
+//TODO:
+//TODO: add A*
+//TODO: add stats on html display (quick inspi from video?)
+//TODO: add noice trail effect on path reconstruction !
+//TODO:
+//TODO:
+//TODO:
+//TODO:
+//TODO:
+//TODO:
+//TODO:
+
 import { CellType } from "./Cell.js";
 import { Grid } from "./Grid.js";
 import { bfsdfs, dijkstra } from "./algorithms.js";
 
-let isMouseDown = false;
-let isShiftDown = false;
+export { startRadio, endRadio, plainResize as handleResize };
 
-const canvas = document.getElementById("grid");
-const ctx = canvas.getContext("2d");
-
-export { startRadio, endRadio };
-
-// Controls setup
+/* -------------------------------------------------------------------------- */
+/*                               Controls setup                               */
+/* -------------------------------------------------------------------------- */
 const startRadio = document.querySelector('.control-panel>div>input[name="cell_type"]#start');
 const endRadio = document.querySelector('.control-panel>div>input[name="cell_type"]#end');
 const getCellTypeActiveRadio = () => document.querySelector('.control-panel>div>input[name="cell_type"]:checked');
 
-const clearGridBtn = document.getElementById("btn_clear_grid");
-clearGridBtn.addEventListener("click", () => grid.clearGrid());
+document
+    .getElementById("btn_clear_grid") //
+    .addEventListener("click", () => grid.clearGrid());
 
-const clearPathBtn = document.getElementById("btn_clear_path");
-clearPathBtn.addEventListener("click", () => grid.clearPath());
+document
+    .getElementById("btn_clear_path") //
+    .addEventListener("click", () => grid.clearPath());
 
 const cellSizeSlider = document.querySelector('.control-panel>div>input[name="cell_size"]');
 cellSizeSlider.addEventListener("change", () => grid.setPixelSize(getCellSize()));
-// cellSizeSlider.addEventListener("input", () => grid.setPixelSize(getCellSize())); // changes as the mouse slides, not ideal
 const getCellSize = () => cellSizeSlider.value;
 
-const algoSpeedSlider = document.querySelector('.control-panel>div>input[name="algo_speed"]');
-algoSpeedSlider.addEventListener("change", () => (grid.algoSpeed = algoSpeedSlider.value));
+document
+    .querySelector('.control-panel>div>input[name="algo_speed"]') //
+    .addEventListener("change", (e) => (grid.algoSpeed = e.target.value));
 
-const algoDropdown = document.querySelector(".control-panel>select");
-const getSelectedAlgo = () => algoDropdown.value;
+const getSelectedAlgo = () => document.querySelector(".control-panel>select#algorithm").value;
 
-// arbitrary size, real size computed by handleResize() in init()
+/* -------------------------------------------------------------------------- */
+/*                                  Main code                                 */
+/* -------------------------------------------------------------------------- */
+const canvas = document.getElementById("grid");
+const ctx = canvas.getContext("2d");
 const grid = new Grid(canvas, 32, 32, getCellSize());
+
+let isMouseDown = false,
+    isShiftDown = false;
+// arbitrary size, real size computed by handleResize() in init()
 
 init();
 
-function mainDraw() {
+function init() {
+    initEvents();
+    plainResize();
+    mainLoop();
+}
+
+function mainLoop() {
     // background
     ctx.fillStyle = "rgba(255,255,255,0.1)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     grid.draw();
-    requestAnimationFrame(mainDraw);
-}
-
-function init() {
-    handleResize();
-
-    initEvents();
-
-    mainDraw();
+    requestAnimationFrame(mainLoop);
 }
 
 function initEvents() {
-    window.addEventListener("resize", debouncedResize);
+    window.addEventListener("resize", handleResizeDebounced);
 
-    window.addEventListener("mouseup", handleMouse);
-    window.addEventListener("mousedown", handleMouse);
-    window.addEventListener("mousemove", handleMouse);
+    ["keydown", "keyup"] //
+        .forEach((e) => window.addEventListener(e, handleKeys));
+
+    ["mousedown", "mouseup", "mousemove"] //
+        .forEach((e) => window.addEventListener(e, handleMouse));
+
     // disable right click context menu
     window.addEventListener("contextmenu", (e) => {
         e.preventDefault();
         return false;
     });
-
-    window.addEventListener("keydown", handleKeys);
-    window.addEventListener("keyup", handleKeys);
 }
 
 let resizeTimeout;
 
-function debouncedResize() {
-    // don't start resizing grid until user has stopped resizing window
-    // eliminates lag during resizing
+function handleResizeDebounced() {
+    // don't start resizing grid until user has stopped
+    // resizing window to eliminate lag during resizing
     clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(handleResize, 25);
+    resizeTimeout = setTimeout(plainResize, 25);
 }
 
-function handleResize() {
+// FIXME: this changes canvas size !! need appropriate css to not look bad when resizing on pixelsize change
+function plainResize() {
     let wantedH = window.innerHeight * 0.8;
     let wantedW = window.innerWidth * 0.8;
 
@@ -102,9 +125,7 @@ function handleResize() {
 
     let rows = Math.floor(canvas.height / divWidth);
     let cols = Math.floor(canvas.width / divWidth);
-
-    console.log(canvas.height / divWidth, canvas.height, rows * divWidth);
-
+    // console.log(canvas.height / divWidth, canvas.height, rows * divWidth);
     grid.setGridSize(rows, cols);
 }
 
@@ -135,7 +156,9 @@ async function handleKeys(e) {
             case "dijkstra":
                 algoResults = await dijkstra(grid);
                 break;
+
             default:
+                grid.runningPathfinding = false;
                 alert("Not implemented yet !");
                 break;
         }
