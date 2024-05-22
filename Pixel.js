@@ -18,7 +18,7 @@ CellType._COLORS = {
     path: "rgba(212, 115, 212,0.3)",
 };
 
-export class Cell {
+export class Pixel {
     constructor(grid, i, j, size, type = CellType.FREE) {
         this.ctx = grid.canvas.getContext("2d");
         this.grid = grid;

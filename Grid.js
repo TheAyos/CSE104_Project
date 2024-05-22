@@ -1,7 +1,7 @@
 "use strict;";
 
 import { startRadio, endRadio, handleResize } from "./script.js";
-import { Cell, CellType } from "./Cell.js";
+import { Pixel, CellType } from "./Pixel.js";
 
 export class Grid {
     constructor(canvas, rows, cols, pixelSize) {
@@ -38,21 +38,34 @@ export class Grid {
 
         if (!pathOnly) this.resetControls();
 
+        const savedObstacles = Array.from(Array(this.rows), () => Array.from(Array(this.cols), () => null));
+
         const newPixelArray = [];
 
-        // FIXME: don't clear obstacles on clearPath !!!
         for (let i = 0; i < this.rows; i++) {
             newPixelArray.push([]);
             for (let j = 0; j < this.cols; j++) {
-                newPixelArray[i].push(new Cell(this, i, j, this.pixelSize, CellType.FREE));
+                if (this.pixelArray.length !== 0 && this.pixelArray[i][j].type === CellType.OBSTACLE) savedObstacles[i][j] = this.pixelArray[i][j];
+                newPixelArray[i].push(new Pixel(this, i, j, this.pixelSize, CellType.FREE));
             }
         }
 
         this.pixelArray = newPixelArray;
 
+        // 'restore' saved pixels & deal with start/end pixels accordingly
         if (pathOnly) {
-            if (this.startPixel) this.pixelArray[this.startPixel.i][this.startPixel.j] = this.startPixel;
-            if (this.endPixel) this.pixelArray[this.endPixel.i][this.endPixel.j] = this.endPixel;
+            for (let i = 0; i < savedObstacles.length; i++) {
+                for (let j = 0; j < savedObstacles[0].length; j++) {
+                    if (savedObstacles[i][j] !== null) this.pixelArray[i][j] = savedObstacles[i][j];
+                }
+            }
+
+            [this.startPixel, this.endPixel].forEach((pixel) => {
+                if (pixel) {
+                    pixel.pathParent = null;
+                    this.pixelArray[pixel.i][pixel.j] = pixel;
+                }
+            });
         } else {
             this.startPixel = null;
             this.endPixel = null;

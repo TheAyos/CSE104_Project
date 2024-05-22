@@ -22,13 +22,15 @@
 //TODO:
 //TODO:
 //TODO:
-//TODO:
-//TODO:
-//TODO:
+//TODOXTRAFEATS:
+//TODO: add comparison two algos parallel
+//TODO: add nice sleek scrollbar
+//TODOEND:
+//TODO: check using
 
-import { CellType } from "./Cell.js";
+import { CellType } from "./Pixel.js";
 import { Grid } from "./Grid.js";
-import { bfsdfs, dijkstra } from "./algorithms.js";
+import { reconstructAndVisualizePath, bfsdfs, dijkstra } from "./algorithms.js";
 
 export { startRadio, endRadio, plainResize as handleResize };
 
@@ -138,8 +140,12 @@ async function handleKeys(e) {
     // skip if pathfinding still running
     if (grid.runningPathfinding) return;
 
-    // start algo
+    // algo
     if (e.type === "keydown" && e.key === " ") {
+        // check ready for algo
+        if (!grid.startPixel || !grid.endPixel) {
+            alert("need to set start & end");
+        }
         const algo = getSelectedAlgo();
         let algoResults;
         grid.runningPathfinding = true;
@@ -161,6 +167,14 @@ async function handleKeys(e) {
                 grid.runningPathfinding = false;
                 alert("Not implemented yet !");
                 break;
+        }
+
+        // eslint-disable-next-line no-unused-vars
+        const [found, visited] = algoResults;
+
+        if (found) {
+            // eslint-disable-next-line no-unused-vars
+            const path = reconstructAndVisualizePath(grid);
         }
 
         console.log("algo found ?", algoResults);

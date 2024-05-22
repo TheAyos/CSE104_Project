@@ -1,7 +1,9 @@
 *
 !index.html
-!script.js
 !style.css
+!script.js
 !Grid.js
-!Cell.js
+!Pixel.js
 !algorithms.js
+!js
+!structures.js

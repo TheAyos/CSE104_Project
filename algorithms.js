@@ -1,54 +1,13 @@
 "use strict;";
 
-import { CellType } from "./Cell.js";
+import { CellType } from "./Pixel.js";
+import { Queue, Stack } from "./js/structures.js";
 
 export { bfsdfs, dijkstra };
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-class Stack {
-    #stack; // private
-    constructor(initElts = []) {
-        this.#stack = initElts;
-    }
-
-    isEmpty() {
-        return this.#stack.length === 0;
-    }
-
-    push(x) {
-        this.#stack.push(x);
-    }
-
-    pop() {
-        // LIFO: remove and return the last added element
-        if (this.isEmpty()) throw new Error("Stack is empty");
-        return this.#stack.pop();
-    }
-}
-
-class Queue {
-    #queue; // private
-    constructor(initElts = []) {
-        this.#queue = initElts;
-    }
-
-    isEmpty() {
-        return this.#queue.length === 0;
-    }
-
-    push(x) {
-        this.#queue.push(x);
-    }
-
-    pop() {
-        // FIFO: remove and return the first added element
-        if (this.isEmpty()) throw new Error("Queue is empty");
-        return this.#queue.shift();
-    }
-}
-
-function reconstructAndVisualizePath(grid) {
+export function reconstructAndVisualizePath(grid) {
     // /!\ assumes that a path has been found (uses pixel.pathParent)
     const path = [];
     let currentPixel = grid.endPixel;
@@ -66,6 +25,7 @@ function reconstructAndVisualizePath(grid) {
 
 async function bfsdfs(grid, dfs = false) {
     const visited = [],
+        // instanciate appropriate type
         toVisit = new (dfs ? Stack : Queue)();
     toVisit.push(grid.startPixel);
 
@@ -94,10 +54,11 @@ async function bfsdfs(grid, dfs = false) {
         }
         await sleep(grid.algoSpeed);
     }
-    if (!found) return [false];
+    // restore start & end
+    grid.startPixel.type = CellType.START;
+    grid.endPixel.type = CellType.END;
 
-    const path = reconstructAndVisualizePath(grid);
-    return [true, path, visited];
+    return [found, visited];
 }
 
 // TODO: further improvement: implement heap data structure instead of sorting
@@ -132,16 +93,16 @@ async function dijkstra(grid) {
         for (const child of closestPixel.legalNeighbors) {
             if (child.type === CellType.VISITED) continue;
 
-            child.distance = closestPixel.distance + child.j; // WEIGHT IS 1111111 //TODO: add weighted nodes
+            const weight = 1; ////
+            child.distance = closestPixel.distance + weight; // WEIGHT IS 1111111 //TODO: add weighted nodes
             child.pathParent = closestPixel;
         }
 
         await sleep(grid.algoSpeed);
     }
+    // restore start & end
+    grid.startPixel.type = CellType.START;
+    grid.endPixel.type = CellType.END;
 
-    if (!found) return [false];
-
-    const path = reconstructAndVisualizePath(grid);
-
-    return [true, path, visited];
+    return [found, visited];
 }
