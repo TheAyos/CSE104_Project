@@ -115,7 +115,6 @@ export class Grid {
         this.pixelSize = x;
         handleResize();
 
-        //FIXME: better way to do this?
         for (let i = 0; i < this.rows; i++) {
             for (let j = 0; j < this.cols; j++) {
                 this.pixelArray[i][j].size = this.pixelSize;
@@ -148,6 +147,7 @@ export class Grid {
         this.ctx.strokeStyle = "black";
         this.ctx.lineWidth = "1";
 
+        // grid lines
         for (let y = 0; y < this.rows + 1; y++) {
             this.ctx.beginPath();
             this.ctx.moveTo(0, y * this.pixelSize);
@@ -162,6 +162,7 @@ export class Grid {
             }
         }
 
+        // call draw on each pixel
         for (let i = 0; i < this.rows; i++) {
             for (let j = 0; j < this.cols; j++) {
                 this.pixelArray[i][j].draw();

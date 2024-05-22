@@ -1,36 +1,44 @@
 "use strict;";
 
-// TODO: block controls when algoviz start
-// TODO: animate clear grid button - unlocks back controls
-// TODO: make cancel button inplace of start button when algoviz started
-// TODO: fix bugs in input state variables when alt-tabbing from the window
-// TODO: add current mouse pos+selected cell type hover highlight on grid ???
-// TODO: maybe add frontier viz(nodes in queue)
-
-// nicetodo:
-// xtra, less prio:
-// TODO: add weights with 12356 pressing while painting for weighted algos
-
-/* -------------------------------------------------------------------------- */
-/*                                  todo next                                 */
-/* -------------------------------------------------------------------------- */
 //TODO:
 //TODO: add A*
+//FIXME: onload : Live reload enabled.
+// Grid.js:74 [clearGrid] just created a pixelArray of size 32 32
+// Grid.js:48 Uncaught TypeError: Cannot read properties of undefined (reading 'type')
+//     at Grid.clearGrid (Grid.js:48:75)
+//     at Grid.setGridSize (Grid.js:111:14)
+//     at plainResize (script.js:127:10)
+//     at init (script.js:73:5)
+//     at script.js:69:1
+// 3script.js:107 Uncaught ReferenceError: Cannot access 'resizeTimeout' before initialization
+//     at handleResizeDebounced (script.js:107:18)
+// 13script.js:107 Uncaught ReferenceError: Cannot access 'resizeTimeout' before initialization
+//     at handleResizeDebounced (script.js:107:18)
+//TODO: add weighted node (mud or sth) : pressing while painting for weighted algos : + (for unweighted, just replace by normal obstacles before running)
 //TODO: add stats on html display (quick inspi from video?)
 //TODO: add noice trail effect on path reconstruction !
-//TODO:
-//TODO:
-//TODO:
-//TODO:
-//TODOXTRAFEATS:
+//TODO: UI UI UI UI UI UI UI
+//TODO: maze generating
+//TODO: notif system useful for alert (need end&start !) / what key you pressed àlamacos..;
 //TODO: add comparison two algos parallel
+//TODO: maybe add frontier viz(nodes in queue)
+//TODO:
+//TODO:
+//XTRAFEATS:
 //TODO: add nice sleek scrollbar
+//TODO: block controls when algoviz start
+//TODO: animate clear grid button - unlocks back controls
+//TODO: make cancel button inplace of start button when algoviz started
+//TODO: fix bugs in input state variables when alt-tabbing from the window
+//TODO: add current mouse pos+selected cell type hover highlight on grid ???
 //TODOEND:
 //TODO: check using
+// BEFORERETURN !!!!
+//TODO: html validate
 
 import { CellType } from "./Pixel.js";
 import { Grid } from "./Grid.js";
-import { reconstructAndVisualizePath, bfsdfs, dijkstra } from "./algorithms.js";
+import { reconstructAndVisualizePath, sleep, bfsdfs, dijkstra, astar } from "./algorithms.js";
 
 export { startRadio, endRadio, plainResize as handleResize };
 
@@ -131,6 +139,10 @@ function plainResize() {
     grid.setGridSize(rows, cols);
 }
 
+/* -------------------------------------------------------------------------- */
+/*                               Input handlers                               */
+/* -------------------------------------------------------------------------- */
+
 async function handleKeys(e) {
     isShiftDown = e.type === "keydown" && e.key === "Shift";
 
@@ -163,19 +175,32 @@ async function handleKeys(e) {
                 algoResults = await dijkstra(grid);
                 break;
 
+            case "astar":
+                algoResults = await astar(grid);
+                break;
+
             default:
                 grid.runningPathfinding = false;
-                alert("Not implemented yet !");
+                alert("Not implemented !");
                 break;
         }
 
-        // eslint-disable-next-line no-unused-vars
         const [found, visited] = algoResults;
 
         if (found) {
-            // eslint-disable-next-line no-unused-vars
             const path = reconstructAndVisualizePath(grid);
+            // stop just before end pixel
+            path.pop();
+            for (const pixel of path) {
+                //TODO: add nice 0-1 bits moving trail as path parcours ?
+                console.log("retraversing path at i,j", pixel.i, pixel.j);
+                await sleep(20);
+                pixel.type = CellType.PATH;
+            }
         }
+
+        //TODO: stats panel
+        console.log("total visited nodes:", visited.length);
 
         console.log("algo found ?", algoResults);
         console.log(grid.rows, grid.cols);
