@@ -1,43 +1,9 @@
 "use strict;";
 
-//TODONEXT:
-//TODO: finish frontier
-//TODO: maybe add frontier viz(nodes in queue)
-//FIXME: add basic minimalist UI
-
-//TODO: add stats on html display (quick inspi from video?)
-//TODO: maze generating
-//FIXME: add minesweeper bomb pixel (to be évité by weighted algos)
-//TODO: add weighted node (mud or sth) : pressing while painting for weighted algos : + (for unweighted, just replace by normal obstacles before running)
-
-//TODO: notif system useful for alert (need end&start !) / what key you pressed àlamacos..;
-//TODO: add simple button to randomly fill maze grid
-//TODO: add comparison two algos parallel
-//XTRAFEATS:
-//TODO: save cell size and speed in localstorage
-//TODO: add nice sleek scrollbar
-//TODO: block controls when algoviz start
-//TODO: animate clear grid button - unlocks back controls
-//TODO: make cancel button inplace of start button when algoviz started
-//TODO: fix bugs in input state variables when alt-tabbing from the window
-//TODO: add current mouse pos+selected cell type hover highlight on grid ???
-
-// PRIO !!!!
-//FIXME: prepare report
-//TODO: add html short descriptions of algos with main pros & cons
-//FIXME: clearing path causes 1fois/2 no path viz (not for a* tho ?
-//FIXME: clearPath + restart algo (V+space) quick causes no path visualized ?
-
-//TODOEND:
-//FIXME: add controls explanation
-//TODO: add stats panel for UI html
-//TODO: html validate
-//TODO: check "use strict;"; all js files
-
-import { CellType } from "./Pixel.js";
-import { Grid } from "./Grid.js";
-import { reconstructPath, sleep, bfsdfs, dijkstra, astar } from "./algorithms.js";
-import { TrailBits } from "./js/TrailBits.js";
+import { CellType } from "./assets/js/Pixel.js";
+import { Grid } from "./assets/js/Grid.js";
+import { reconstructPath, sleep, bfsdfs, dijkstra, astar } from "./assets/js/algorithms.js";
+import { TrailBits } from "./assets/js/TrailBits.js";
 
 export { startRadio, endRadio, plainResize };
 

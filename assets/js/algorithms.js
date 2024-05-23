@@ -1,7 +1,7 @@
 "use strict;";
 
 import { CellType } from "./Pixel.js";
-import { Queue, Stack } from "./js/structures.js";
+import { Queue, Stack } from "./structures.js";
 
 export { sleep, reconstructPath, bfsdfs, dijkstra, astar };
 
