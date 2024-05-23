@@ -18,7 +18,7 @@ CellType._COLORS = {
     end: `rgba(255,0,0,${cellColorOpacity})`,
     obstacle: `rgba(0,0,255,${cellColorOpacity})`,
     visited: `rgba(166, 172, 175,${cellColorOpacity})`,
-    frontier: `rgba(201, 207, 210,${cellColorOpacity})`,
+    frontier: `rgba(217, 223, 225,${cellColorOpacity})`,
     path: `rgba(212, 115, 212,${cellColorOpacity})`,
 };
 

@@ -134,6 +134,16 @@ export class Grid {
         this.clearGrid();
     }
 
+    get allPixels() {
+        const pixels = [];
+        for (const row of this.pixelArray) {
+            for (const pixel of row) {
+                pixels.push(pixel);
+            }
+        }
+        return pixels;
+    }
+
     // window-to-canvas coordinate mapping
     getPixelFromWindowCoords(x, y) {
         const r = this.canvas.getBoundingClientRect();

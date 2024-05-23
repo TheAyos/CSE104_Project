@@ -30,9 +30,8 @@ async function bfsdfs(grid, dfs = false) {
 
     let found = false;
     while (!toVisit.isEmpty() != 0 && !found && grid.runningPathfinding) {
-        // var to access outside of the while
         // pop behaves according to data structure (dfs:stack & bfs:queue)
-        var currentPixel = toVisit.pop();
+        const currentPixel = toVisit.pop();
 
         // sanity checks
         if (currentPixel.type === CellType.VISITED) continue;
@@ -75,8 +74,7 @@ async function dijkstra(grid) {
         // sort by ascending distance to choose next pixel to visit
         toVisit.sort((x, y) => x.distance - y.distance);
 
-        // var to access outside of the while
-        var closestPixel = toVisit.shift();
+        const closestPixel = toVisit.shift();
 
         // sanity checks
         // if (closestPixel.type === CellType.VISITED) continue;
@@ -93,6 +91,8 @@ async function dijkstra(grid) {
         // update neighbors' distances according to dijkstra's logic
         for (const child of closestPixel.legalNeighbors) {
             if (child.type === CellType.VISITED) continue;
+
+            if (child.type === CellType.FREE) child.type = CellType.FRONTIER;
 
             const weight = 1; ////
             child.distance = closestPixel.distance + weight; // WEIGHT IS 1111111 //TODO: add weighted nodes
@@ -154,6 +154,7 @@ async function astar(grid) {
                 gScore.set(neighbor, tentative_gScore);
                 fScore.set(neighbor, tentative_gScore + heuristic(neighbor, grid.endPixel));
                 if (!openSet.has(neighbor) && neighbor.type !== CellType.OBSTACLE) {
+                    neighbor.type = CellType.FRONTIER;
                     openSet.add(neighbor);
                 }
             }
