@@ -1,0 +1,56 @@
+@font-face {
+    font-family: "Blox";
+    src: url("../../assets/fonts/BloxBrk.ttf") format("truetype");
+}
+
+.trailbit,
+.halo {
+    position: absolute;
+    pointer-events: none;
+    z-index: 999;
+    font-family: "Blox";
+}
+
+@keyframes fade {
+    from {
+        opacity: 100%;
+    }
+    to {
+        opacity: 15%;
+    }
+}
+
+@keyframes dance {
+    0% {
+        /* "jump, stretch up" on apparition */
+        transform: scale(0.3) translate3d(0, 0, 0) rotate3d(1, 0, 0, 0) rotate3d(0, 1, 0, -360deg) rotate3d(0, 0, 1, 0);
+        opacity: 0;
+    }
+
+    12% {
+        transform: scale(1) translate3d(-15px, 15px, 0) rotate3d(1, 0, 0, 0) rotate3d(0, 1, 0, 0) rotate3d(0, 0, 1, 0);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(0.8) translate3d(-30px, 150px, 0) rotate3d(1, 0, 0, -180deg) rotate3d(0, 1, 0, 25deg) rotate3d(0, 0, 1, -270deg);
+        opacity: 0;
+    }
+}
+
+@keyframes dance-alt {
+    0% {
+        transform: scale(0.3) translate3d(0, 0, 0) rotate3d(1, 0, 0, 0) rotate3d(0, 1, 0, 360deg);
+        opacity: 0;
+    }
+
+    12% {
+        transform: scale(0.9) translate3d(-15px, -5px, 0) rotate3d(1, 0, 0, -20deg) rotate3d(0, 1, 0, 10deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(0.3) translate3d(-18px, 180px, 0) rotate3d(1, 0, 0, -90deg) rotate3d(0, 1, 0, -45deg);
+        opacity: 0;
+    }
+}

@@ -6,21 +6,24 @@ export const CellType = {
     END: "end",
     OBSTACLE: "obstacle",
     VISITED: "visited",
+    FRONTIER: "frontier",
     PATH: "path",
 };
 
+const cellColorOpacity = "0.8";
+
 CellType._COLORS = {
     // "free": "", // not needed, Cell.draw() just skips
-    start: "rgba(0,255,0,0.3)",
-    end: "rgba(255,0,0,0.3)",
-    obstacle: "rgba(0,0,255,0.3)",
-    visited: "rgba(166, 172, 175,0.3)",
-    path: "rgba(212, 115, 212,0.3)",
+    start: `rgba(0,255,0,${cellColorOpacity})`,
+    end: `rgba(255,0,0,${cellColorOpacity})`,
+    obstacle: `rgba(0,0,255,${cellColorOpacity})`,
+    visited: `rgba(166, 172, 175,${cellColorOpacity})`,
+    frontier: `rgba(201, 207, 210,${cellColorOpacity})`,
+    path: `rgba(212, 115, 212,${cellColorOpacity})`,
 };
 
 export class Pixel {
     constructor(grid, i, j, size, type = CellType.FREE) {
-        this.ctx = grid.canvas.getContext("2d");
         this.grid = grid;
 
         this.i = i;
@@ -33,12 +36,12 @@ export class Pixel {
         this.distance = Infinity; // for dijkstra
     }
 
-    get y() {
-        return this.i * this.size;
-    }
-    get x() {
-        return this.j * this.size;
-    }
+    get y() { return this.i * this.size } // prettier-ignore
+    get x() { return this.j * this.size } // prettier-ignore
+
+    // canvas-to-window coordinate mappings
+    get windowX() { return this.x + this.grid.canvas.getBoundingClientRect().left } // prettier-ignore
+    get windowY() { return this.y + this.grid.canvas.getBoundingClientRect().top } // prettier-ignore
 
     get legalNeighbors() {
         // bottom right up left  --- [dY, dX] --- [dI, dJ]
@@ -65,9 +68,9 @@ export class Pixel {
             return;
         }
 
-        this.ctx.beginPath();
-        this.ctx.fillStyle = CellType._COLORS[this.type] || "black";
-        this.ctx.fillRect(this.x, this.y, this.size, this.size);
-        this.ctx.closePath();
+        this.grid.ctx.beginPath();
+        this.grid.ctx.fillStyle = CellType._COLORS[this.type] || "black";
+        this.grid.ctx.fillRect(this.x, this.y, this.size, this.size);
+        this.grid.ctx.closePath();
     }
 }

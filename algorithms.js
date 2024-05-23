@@ -3,11 +3,11 @@
 import { CellType } from "./Pixel.js";
 import { Queue, Stack } from "./js/structures.js";
 
-export { sleep, reconstructAndVisualizePath, bfsdfs, dijkstra, astar };
+export { sleep, reconstructPath, bfsdfs, dijkstra, astar };
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-function reconstructAndVisualizePath(grid) {
+function reconstructPath(grid) {
     // /!\ assumes that a path has been found (uses pixel.pathParent)
     const path = [];
     let currentPixel = grid.endPixel;
@@ -23,9 +23,9 @@ function reconstructAndVisualizePath(grid) {
 }
 
 async function bfsdfs(grid, dfs = false) {
-    const visited = [],
-        // instanciate appropriate type
-        toVisit = new (dfs ? Stack : Queue)();
+    const visited = [];
+    // instanciate appropriate type
+    const toVisit = new (dfs ? Stack : Queue)();
     toVisit.push(grid.startPixel);
 
     let found = false;
@@ -41,21 +41,22 @@ async function bfsdfs(grid, dfs = false) {
         // reconstruct path if done
         if (currentPixel.type === CellType.END) found = true;
 
+        if (currentPixel.type === CellType.FRONTIER) currentPixel.type = CellType.VISITED;
+
         currentPixel.type = CellType.VISITED;
         visited.push(currentPixel);
 
         // process next neighbors
         for (const child of currentPixel.legalNeighbors) {
-            if (child.type !== CellType.VISITED && child.type !== CellType.OBSTACLE && !child.pathParent) {
+            if (child.type !== CellType.FRONTIER && child.type !== CellType.VISITED && child.type !== CellType.OBSTACLE && !child.pathParent) {
                 child.pathParent = currentPixel;
+
+                if (child.type !== CellType.END) child.type = CellType.FRONTIER;
                 toVisit.push(child);
             }
         }
         await sleep(grid.algoSpeed);
     }
-    // restore start & end
-    grid.startPixel.type = CellType.START;
-    grid.endPixel.type = CellType.END;
 
     return [found, visited];
 }
@@ -100,10 +101,6 @@ async function dijkstra(grid) {
 
         await sleep(grid.algoSpeed);
     }
-    // restore start & end
-    grid.startPixel.type = CellType.START;
-    grid.endPixel.type = CellType.END;
-
     return [found, visited];
 }
 
@@ -115,7 +112,6 @@ async function astar(grid) {
 
     const visited = [];
 
-    // TODO: (xtra) implement as minheap/pqueue
     const openSet = new Set([grid.startPixel]);
 
     const gScore = new Map(),
@@ -131,7 +127,7 @@ async function astar(grid) {
     gScore.set(grid.startPixel, 0);
     fScore.set(grid.startPixel, heuristic(grid.startPixel, grid.endPixel));
 
-    // TODO: inefficient?
+    // TODO: inefficient : implement as minheap/pqueue !
     const getLowestFScorePixel = () => Array.from(openSet).sort((a, b) => fScore.get(a) - fScore.get(b))[0];
 
     let found = false;
@@ -165,9 +161,5 @@ async function astar(grid) {
 
         await sleep(grid.algoSpeed);
     }
-    // restore start & end
-    grid.startPixel.type = CellType.START;
-    grid.endPixel.type = CellType.END;
-
     return [found, visited];
 }

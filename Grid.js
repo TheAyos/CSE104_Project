@@ -1,6 +1,6 @@
 "use strict;";
 
-import { startRadio, endRadio, handleResize } from "./script.js";
+import { startRadio, endRadio, plainResize } from "./script.js";
 import { Pixel, CellType } from "./Pixel.js";
 
 export class Grid {
@@ -36,16 +36,20 @@ export class Grid {
     clearGrid(pathOnly = false) {
         this.runningPathfinding = false;
 
-        if (!pathOnly) this.resetControls();
-
-        const savedObstacles = Array.from(Array(this.rows), () => Array.from(Array(this.cols), () => null));
+        const savedPixels = Array.from(Array(this.rows), () => Array.from(Array(this.cols), () => null));
 
         const newPixelArray = [];
 
         for (let i = 0; i < this.rows; i++) {
             newPixelArray.push([]);
             for (let j = 0; j < this.cols; j++) {
-                if (this.pixelArray.length !== 0 && this.pixelArray[i][j].type === CellType.OBSTACLE) savedObstacles[i][j] = this.pixelArray[i][j];
+                if (
+                    this.pixelArray.length !== 0 && //
+                    this.pixelArray[i] &&
+                    this.pixelArray[i][j] &&
+                    this.pixelArray[i][j].type === CellType.OBSTACLE
+                )
+                    savedPixels[i][j] = this.pixelArray[i][j];
                 newPixelArray[i].push(new Pixel(this, i, j, this.pixelSize, CellType.FREE));
             }
         }
@@ -54,22 +58,29 @@ export class Grid {
 
         // 'restore' saved pixels & deal with start/end pixels accordingly
         if (pathOnly) {
-            for (let i = 0; i < savedObstacles.length; i++) {
-                for (let j = 0; j < savedObstacles[0].length; j++) {
-                    if (savedObstacles[i][j] !== null) this.pixelArray[i][j] = savedObstacles[i][j];
-                }
-            }
-
-            [this.startPixel, this.endPixel].forEach((pixel) => {
-                if (pixel) {
+            for (const row of savedPixels) {
+                for (const pixel of row.filter((p) => p !== null)) {
                     pixel.pathParent = null;
                     this.pixelArray[pixel.i][pixel.j] = pixel;
                 }
-            });
+            }
+
+            if (this.startPixel) {
+                this.startPixel.pathParent = null;
+                this.startPixel.type = CellType.START;
+                this.pixelArray[this.startPixel.i][this.startPixel.j] = this.startPixel;
+            }
+            if (this.endPixel) {
+                this.endPixel.pathParent = null;
+                this.endPixel.type = CellType.END;
+                this.pixelArray[this.endPixel.i][this.endPixel.j] = this.endPixel;
+            }
         } else {
             this.startPixel = null;
             this.endPixel = null;
         }
+
+        if (!pathOnly) this.resetControls();
 
         console.log("[clearGrid] just created a pixelArray of size", this.pixelArray.length, this.pixelArray[0].length);
     }
@@ -113,7 +124,7 @@ export class Grid {
 
     setPixelSize(x) {
         this.pixelSize = x;
-        handleResize();
+        plainResize();
 
         for (let i = 0; i < this.rows; i++) {
             for (let j = 0; j < this.cols; j++) {
@@ -139,13 +150,19 @@ export class Grid {
         if (pixelRow >= this.rows || pixelCol >= this.cols) return undefined;
 
         const currentPixel = this.pixelArray[pixelRow][pixelCol];
-        // console.log("getPixelFromWindowCoords", currentPixel);
         return currentPixel;
     }
 
     draw() {
         this.ctx.strokeStyle = "black";
         this.ctx.lineWidth = "1";
+
+        // call draw on each pixel
+        for (let i = 0; i < this.rows; i++) {
+            for (let j = 0; j < this.cols; j++) {
+                this.pixelArray[i][j].draw();
+            }
+        }
 
         // grid lines
         for (let y = 0; y < this.rows + 1; y++) {
@@ -159,13 +176,6 @@ export class Grid {
                 this.ctx.moveTo(x * this.pixelSize, 0);
                 this.ctx.lineTo(x * this.pixelSize, this.rows * this.pixelSize);
                 this.ctx.stroke();
-            }
-        }
-
-        // call draw on each pixel
-        for (let i = 0; i < this.rows; i++) {
-            for (let j = 0; j < this.cols; j++) {
-                this.pixelArray[i][j].draw();
             }
         }
     }
