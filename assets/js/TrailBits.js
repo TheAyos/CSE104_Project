@@ -13,7 +13,7 @@ export class TrailBits {
         halo.className = "halo";
         halo.style.left = `${pos.x}px`;
         halo.style.top = `${pos.y}px`;
-        halo.style.boxShadow = `0rem 0rem ${size}px ${size / 2}px rgba(212, 115, 212, 1)`;
+        halo.style.boxShadow = `0rem 0rem ${size}px ${size / 2}px #ff8d0055`;
 
         halo.style.animationDuration = "300ms";
         halo.style.animationFillMode = "forwards";

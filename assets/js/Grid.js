@@ -1,6 +1,6 @@
 "use strict;";
 
-import { startRadio, endRadio, plainResize } from "./script.js";
+import { startRadio, endRadio, plainResize } from "../../script.js";
 import { Pixel, CellType } from "./Pixel.js";
 
 export class Grid {
@@ -94,14 +94,14 @@ export class Grid {
         this.startPixel = currentPixel;
         startRadio.disabled = true;
         // FIXME: WATCH OUT, list could be empty (ok as long as i don't disable the obstacle radio)
-        document.querySelectorAll('.control-panel>div>input[name="cell_type"]:not(:checked):not(:disabled)')[0].checked = true;
+        document.querySelectorAll('.control__panel>div>input[name="cell_type"]:not(:checked):not(:disabled)')[0].checked = true;
     }
     setEnd(currentPixel) {
         currentPixel.type = CellType.END;
         this.endPixel = currentPixel;
         endRadio.disabled = true;
         // FIXME: WATCH OUT, list could be empty (ok as long as i don't disable the obstacle radio)
-        document.querySelectorAll('.control-panel>div>input[name="cell_type"]:not(:checked):not(:disabled)')[0].checked = true;
+        document.querySelectorAll('.control__panel>div>input[name="cell_type"]:not(:checked):not(:disabled)')[0].checked = true;
     }
     setFree(currentPixel) {
         if (currentPixel.type === CellType.START) {

@@ -6,60 +6,142 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Proje</title>
     <link rel="stylesheet" href="style.css">
-    <script type="module" src="./script.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer">
+
+    <script type="module" src="./script.js"></script>
 </head>
 
 <body>
 
+    <nav>
+        <div class="nav__logo nav__item">
+            <a href="#">
+                <i class="fa-solid fa-code-branch"></i>
+            </a>
+        </div>
+
+        <div class="nav__pages nav__item">
+            <a href="index.html">Pathfinding</a>
+            <a href="https://imagecomputing.net/old_storage/old_website2/teaching/2020_2021/s2/cse104-web_programming/general_documentation/project/"
+                target="_blank">About</a>
+        </div>
+
+        <div class="nav__social nav__item">
+            <a href="https://github.com/TheAyos/CSE104_Project" target="_blank">
+                <i class="fa-brands fa-github"></i>
+            </a>
+        </div>
+    </nav>
+
     <main>
-        <fieldset class="control-panel">
-            <legend>Select a cell type to paint:</legend>
+        <div class="canvas__container">
+            <canvas id="grid"></canvas>
+        </div>
 
-            <div>
-                <input type="radio" id="start" name="cell_type" value="start" checked="true" />
-                <label for="start">Starting point</label>
+        <div class="control__panel__container">
+
+            <fieldset class="control__panel">
+                <legend>Select a cell type to paint:</legend>
+
+                <div>
+                    <input type="radio" id="start" name="cell_type" value="start" checked=checked>
+                    <label for="start">Starting point</label>
+                </div>
+
+                <div>
+                    <input type="radio" id="end" name="cell_type" value="end">
+                    <label for="end">Ending point</label>
+                </div>
+
+                <div>
+                    <input type="radio" id="obstacle" name="cell_type" value="obstacle">
+                    <label for="obstacle">Obstacle</label>
+                </div>
+
+                <div>
+                    <input type="range" id="cell_size" name="cell_size" value=42 min=18 max=80>
+                    <label for="cell_size">Cell size</label>
+                </div>
+
+
+                <div>
+                    Hold ^ shift to erase
+                </div>
+
+                <label for="algorithm">Select an algorithm:</label>
+                <select name="algorithm" id="algorithm">
+                    <option value="bfs">Breadth-First Search</option>
+                    <option value="dfs">Depth-First Search</option>
+                    <option value="dijkstra">Dijkstra</option>
+                    <option value="astar">A*</option>
+                </select>
+
+                <div>
+                    <input type="range" id="algo_speed" name="algo_speed" value=10 min=0 max=30>
+                    <label for="algo_speed">Speed</label>
+                </div>
+
+            </fieldset>
+
+            <div id="info__display" class="info__display">
+            </div>
+        </div>
+
+        <div id="algorithm__card" class="algorithm__card">
+            <div id="bfs">
+                <h2>Breadth-First Search</h2>
+                <p>BFS is initially an algorithm for traversing graph data structures. Starting at the root node,
+                    it explores all neighboring nodes at the present depth level before moving
+                    on to nodes at the next depth level.</p>
+                <p>+ Finds the shortest path in an <span>unweighted</span> graph and will find a solution if one exists.
+                </p>
+                <p>- Not very space-efficient.</p>
             </div>
 
-            <div>
-                <input type="radio" id="end" name="cell_type" value="end" />
-                <label for="end">Ending point</label>
+            <div id="dfs">
+                <h2>Depth-First Search</h2>
+                <p>DFS is an algorithm for traversing graph data structures, starting at the root node
+                    and exploring as far as possible along each branch before backtracking.</p>
+                <p>+ Uses less memory compared to BFS and can be more efficient for deep graphs.</p>
+                <p>- Does not guarantee the shortest path and can get stuck in infinite loops if cycles are present.</p>
+            </div>
+            <div id="dijkstra">
+                <h2>Dijkstra's Algorithm</h2>
+                <p>Dijkstra's Algorithm is used for finding the shortest paths between nodes in a graph,
+                    which may represent, for example, road networks.</p>
+                <p>+ Guarantees the shortest path in graphs with non-negative weights.</p>
+                <p>- Can be slow for large graphs and does not work with negative weight edges.</p>
+            </div>
+            <div id="astar">
+                <h2>A* Search</h2>
+                <p>A* Search is an informed search algorithm used for pathfinding and graph traversal,
+                    which uses both the actual distance from the start and a heuristic to the goal.</p>
+                <p>+ Efficiently finds the shortest path by combining the best aspects of Dijkstra's Algorithm and
+                    greedy search.</p>
+                <p>- Performance heavily depends on the quality of the heuristic and can be computationally expensive.
+                </p>
             </div>
 
-            <div>
-                <input type="radio" id="obstacle" name="cell_type" value="obstacle" />
-                <label for="obstacle">Obstacle</label>
-            </div>
-
-            <div>
-                <input type="range" id="cell_size" name="cell_size" value=42 min=20 max=80 />
-                <label for="cell_size">Cell size</label>
-            </div>
-            <div>
-                <button id="btn_clear_grid">Clear grid</button> (press C)
-            </div>
-
-            <div>
-                <button id="btn_clear_path">Clear path</button> (press V)
-            </div>
-
-            <label for="algorithm">Select an algorithm:</label>
-            <select name="algorithm" id="algorithm">
-                <option value="bfs">Breadth-First Search</option>
-                <option value="dfs">Depth-First Search</option>
-                <option value="dijkstra">Dijkstra</option>
-                <option value="astar">A*</option>
-            </select>
-
-            <div>
-                <input type="range" id="algo_speed" name="algo_speed" value=10 min=0 max=30 />
-                <label for="algo_speed">Speed</label>
-            </div>
-
-        </fieldset>
+        </div>
 
 
+        <div class="control__buttons__container">
+            <button class="control__button" id="btn_clear_grid" type="button" data-label="CLEAR GRID (press C)"
+                onclick="handleLeftClick()">
+                <i class="fa-solid fa-arrow-rotate-right"></i>
+            </button>
+            <button class="control__button" id="btn_clear_path" type="button" data-label="CLEAR PATH (press V)"
+                onclick="handleLeftClick()">
+                <i class="fa-solid fa-repeat"></i>
+            </button>
+            <button class="control__button" id="btn_start_pathfinding" type="button" data-label="START"
+                onclick="handleRightClick()">
+                <i class="fa-solid fa-play"></i>
+            </button>
+        </div>
 
-        <canvas id="grid"></canvas>
     </main>
 
 </body>

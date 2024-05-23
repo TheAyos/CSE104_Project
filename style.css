@@ -1,37 +1,233 @@
 @import url("./assets/css/TrailBits.css");
 
+@font-face {
+    font-family: "DinaRemaster";
+    font-weight: normal;
+    src: url("./assets/fonts/DinaRemaster.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "DinaRemaster";
+    font-weight: bold;
+    src: url("./assets/fonts/DinaRemaster-Bold.ttf") format("truetype");
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                   Common                                   */
+/* -------------------------------------------------------------------------- */
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-body {
-    /* background: linear-gradient(145deg, rgb(119, 46, 195), rgb(58, 18, 153)); */
-    background: linear-gradient(130deg, #ff6a00, #ff0e4a 41.07%, #32d5e0 76.05%);
-    height: 100vh;
-    overflow: hidden;
-    background-color: rgb(217, 223, 225);
+:root {
+    --bg-color: rgb(5, 15, 45);
+    --grid-color: #ffffff30;
+    --nav-height: 9vh;
 }
 
-main {
-    width: 100vw;
-    min-height: 100vh;
+/* prettier-ignore */
+h2, p, a, label, div{ 
+    color: whitesmoke;
+    font-family: "DinaRemaster";
+    font-size: 1.4rem;
+}
+
+body {
+    background: linear-gradient(160deg, rgb(5, 15, 30), rgb(5, 15, 30), rgb(5, 15, 45), rgb(5, 15, 45), rgb(36, 7, 121));
+    /* background-color: var(--bg-color); */
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                   Navbar                                   */
+/* -------------------------------------------------------------------------- */
+
+nav {
+    display: flex;
+    width: 100%;
+    height: var(--nav-height);
+    border-top: 1px solid var(--grid-color);
+}
+
+div.nav__item {
+    font-weight: bold;
+    padding: 1.8rem;
+    /* avoid double borders between elements by choosing one side*/
+    border-right: 1px solid var(--grid-color);
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: clamp(2rem, 10vw, 8rem);
+}
+
+nav > .nav__logo,
+nav > .nav__social,
+nav > .nav__pages {
+    flex-basis: calc(100% / 3);
+}
+
+.nav__item.nav__logo {
+    justify-content: start;
+}
+.nav__item.nav__logo > a {
+    font-size: 2.5rem;
+}
+
+.nav__item a {
+    text-decoration: none;
+    transition: 0.4s color;
+}
+.nav__item a:hover {
+    color: #a5a5a5;
+    text-decoration: none;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                 Grid layout                                */
+/* -------------------------------------------------------------------------- */
+
+main {
+    /* body is flex */
+    flex-grow: 1;
+    width: 100vw;
+    display: grid;
+    max-height: calc(50vh-var(--nav-height));
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: 2fr 1fr;
+    overflow: hidden;
 }
 
 canvas {
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
+    position: relative;
+}
+
+/* ------------------------------- Grid layout ------------------------------ */
+
+main > div {
+    display: flex;
+    height: 100%;
+    border: 1px solid var(--grid-color);
+}
+
+main > .control__panel__container {
+    flex-direction: column;
+    justify-content: space-around;
+    padding: 2rem;
+}
+
+main > .control__panel__container > .info__display {
+    font-weight: bold;
+    flex-grow: 1;
+    margin-top: 4rem;
+}
+@keyframes fade-text {
+    from {
+        opacity: 100%;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+fieldset.control__panel {
+    font-weight: bold;
+    padding: 1rem 2rem;
+    line-height: 1.4;
+}
+
+/* ------------------------------ Control panel ----------------------------- */
+
+fieldset {
+    border: 5px dashed coral;
+}
+
+input[type="radio"] {
+    background-color: #fff;
+    width: 1em;
+    height: 1em;
+    font: inherit;
+}
+input[type="radio"]:hover {
+    background-color: #eee;
+}
+
+main > .algorithm__card > div {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 3rem;
+}
+main > .algorithm__card > div:nth-child(2),
+main > .algorithm__card > div:nth-child(3),
+main > .algorithm__card > div:nth-child(4) {
+    display: none;
+}
+main > .algorithm__card h2 {
+    text-transform: uppercase;
+    font-size: 3.2rem;
+}
+main > .algorithm__card p {
+    text-align: justify;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1em;
+}
+
+main > .control__buttons__container {
+    display: flex;
+}
+main > .control__buttons__container > .control__button {
+    background-color: transparent;
+    flex-grow: 1;
+    border: none;
+    outline: none;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 3rem;
+    cursor: pointer;
+}
+main > .control__buttons__container > .control__button:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+    transition: 0.1s background-color ease-in;
+}
+main > .control__buttons__container > .control__button:nth-child(2) {
+    border-left: 1px solid var(--border-color);
+}
+
+/* -------------------------------- Controls -------------------------------- */
+
+.control__button {
+    position: relative;
+}
+
+.control__button::after {
+    content: attr(data-label); /* show data-label content from HTML ! */
+    position: absolute;
+    font-family: "DinaRemaster";
+    font-weight: bold;
+    top: 65%;
+    left: 50%;
+    transform: translateX(-50%); /* to center */
+    margin-top: 5px;
+    /* text-shadow: 2px 4px 8px rgba(0, 0, 0, 1); */
+    font-size: 1rem;
+}
+
+/* --------------------------------- Canvas --------------------------------- */
+
+canvas {
     border: 5px dashed greenyellow;
 }
 
-fieldset {
-    position: fixed;
-    top: 1rem;
-    left: 1rem;
-    border: 5px dashed coral;
+.canvas__container {
+    /* background-color: white; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* needed to fix problems when resizing canvas */
+    width: calc(100vw * 2 / 3);
+    height: calc(calc(100vh - var(--nav-height)) * 2 / 3);
 }

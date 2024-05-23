@@ -5,10 +5,10 @@
 
 .trailbit,
 .halo {
+    font-family: "Blox";
     position: absolute;
     pointer-events: none;
     z-index: 999;
-    font-family: "Blox";
 }
 
 @keyframes fade {

@@ -16,7 +16,7 @@ CellType._COLORS = {
     // "free": "", // not needed, Cell.draw() just skips
     start: `rgba(0,255,0,${cellColorOpacity})`,
     end: `rgba(255,0,0,${cellColorOpacity})`,
-    obstacle: `rgba(0,0,255,${cellColorOpacity})`,
+    obstacle: `rgba(255,140,0,${cellColorOpacity})`,
     visited: `rgba(166, 172, 175,${cellColorOpacity})`,
     frontier: `rgba(217, 223, 225,${cellColorOpacity})`,
     path: `rgba(212, 115, 212,${cellColorOpacity})`,

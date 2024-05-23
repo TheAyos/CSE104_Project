@@ -42,12 +42,12 @@ import { TrailBits } from "./js/TrailBits.js";
 export { startRadio, endRadio, plainResize };
 
 /* -------------------------------------------------------------------------- */
-/*                               Controls setup                               */
+/*                                  Controls                                  */
 /* -------------------------------------------------------------------------- */
 
-const startRadio = document.querySelector('.control-panel>div>input[name="cell_type"]#start');
-const endRadio = document.querySelector('.control-panel>div>input[name="cell_type"]#end');
-const getCellTypeActiveRadio = () => document.querySelector('.control-panel>div>input[name="cell_type"]:checked');
+const startRadio = document.querySelector('.control__panel>div>input[name="cell_type"]#start');
+const endRadio = document.querySelector('.control__panel>div>input[name="cell_type"]#end');
+const getCellTypeActiveRadio = () => document.querySelector('.control__panel>div>input[name="cell_type"]:checked');
 
 document
     .getElementById("btn_clear_grid") //
@@ -57,15 +57,45 @@ document
     .getElementById("btn_clear_path") //
     .addEventListener("click", () => grid.clearPath());
 
-const cellSizeSlider = document.querySelector('.control-panel>div>input[name="cell_size"]');
-const getCellSize = () => cellSizeSlider.value;
-cellSizeSlider.addEventListener("change", () => grid.setPixelSize(getCellSize()));
+document
+    .getElementById("btn_start_pathfinding") //
+    .addEventListener("click", () => startPathfinding());
 
-const algoSpeedSlider = document.querySelector('.control-panel>div>input[name="algo_speed"]');
-const getAlgoSpeed = () => algoSpeedSlider.value;
+const cellSizeSlider = document.querySelector('.control__panel>div>input[name="cell_size"]');
+const getPixelSize = () => cellSizeSlider.value;
+cellSizeSlider.addEventListener("change", () => grid.setPixelSize(getPixelSize()));
+
+const algoSpeedSlider = document.querySelector('.control__panel>div>input[name="algo_speed"]');
+// convert to sleep interval
+const getAlgoSpeed = () => 30 - algoSpeedSlider.value;
 algoSpeedSlider.addEventListener("change", () => (grid.algoSpeed = getAlgoSpeed()));
 
-const getSelectedAlgo = () => document.querySelector(".control-panel>select#algorithm").value;
+const algoCard = document.getElementById("algorithm__card");
+
+const algoSelectDropdown = document.querySelector(".control__panel>select#algorithm");
+const getSelectedAlgo = () => algoSelectDropdown.value;
+const updateAlgoCard = () => {
+    const cardElements = algoCard.children;
+    [...cardElements].forEach((e) => (e.style.display = "none"));
+    algoCard.children[getSelectedAlgo()].style.display = "flex";
+};
+algoSelectDropdown.addEventListener("change", () => updateAlgoCard());
+
+/* ------------------------------ Info display ------------------------------ */
+
+const infoDisplayEl = document.getElementById("info__display");
+const clearInfoDisplay = () => (infoDisplayEl.innerHTML = "");
+const showInfoMsg = (m, error = false) => {
+    const p = document.createElement("p");
+    p.style.color = error ? "red" : "white";
+    p.textContent = m;
+    infoDisplayEl.appendChild(p);
+
+    p.style.animation = "fade-text linear 1s forwards";
+    p.style.animationDelay = "9000ms";
+    setTimeout(() => infoDisplayEl.removeChild(p), 10000);
+};
+const showErrorMsg = (m) => showInfoMsg(m, true);
 
 /* -------------------------------------------------------------------------- */
 /*                                  Main code                                 */
@@ -74,7 +104,7 @@ const getSelectedAlgo = () => document.querySelector(".control-panel>select#algo
 const canvas = document.getElementById("grid");
 const ctx = canvas.getContext("2d");
 // arbitrary size, real size computed by handleResize() in init()
-const grid = new Grid(canvas, 32, 32, getCellSize());
+const grid = new Grid(canvas, 32, 32, getPixelSize());
 
 let isMouseDown = false,
     isShiftDown = false;
@@ -82,6 +112,8 @@ let isMouseDown = false,
 init();
 
 function init() {
+    // fix for the fact that firefox saves the last selected item on reload
+    updateAlgoCard();
     initEvents();
     plainResize();
     mainLoop();
@@ -89,9 +121,7 @@ function init() {
 
 function mainLoop() {
     // background
-    ctx.fillStyle = "rgba(255,255,255,0.1)";
     ctx.fillStyle = "rgba(58, 18, 153,0.5)";
-    // ctx.fillStyle = "rgba(1, 33, 105,0.1)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     grid.draw();
@@ -99,6 +129,7 @@ function mainLoop() {
 }
 
 function initEvents() {
+    canvas.addEventListener("mouseleave", () => (isMouseDown = false)); // fixes some bugs
     window.addEventListener("resize", handleResizeDebounced);
 
     ["keydown", "keyup"] //
@@ -107,9 +138,8 @@ function initEvents() {
     ["mousedown", "mouseup", "mousemove"] //
         .forEach((e) => window.addEventListener(e, handleMouse));
 
-    // disable right click context menu
     window.addEventListener("contextmenu", (e) => {
-        e.preventDefault();
+        e.preventDefault(); // disable right click context menu
         return false;
     });
 }
@@ -123,22 +153,28 @@ function handleResizeDebounced() {
     resizeTimeout = setTimeout(plainResize, 25);
 }
 
-// FIXME: this changes canvas size !! need appropriate css to not look bad when resizing on pixelsize change
 function plainResize() {
-    let wantedH = window.innerHeight * 0.8;
-    let wantedW = window.innerWidth * 0.8;
+    const canvasContainerR = document.querySelector(".canvas__container").getBoundingClientRect();
+    let wantedH = Math.floor(canvasContainerR.height);
+    let wantedW = Math.floor(canvasContainerR.width);
 
     // make grid look nice (no unfinished grid cells)
-    const divWidth = getCellSize();
-    let fixedH = wantedH - (wantedH % divWidth);
-    let fixedW = wantedW - (wantedW % divWidth);
+    const pixelSize = getPixelSize();
+    let fixedH = wantedH - (wantedH % pixelSize);
+    let fixedW = wantedW - (wantedW % pixelSize);
 
     canvas.height = fixedH;
     canvas.width = fixedW;
+    const fillingBorderWidth = `${Math.abs(canvas.width - canvasContainerR.width) / 2}px`;
+    const fillingBorderHeight = `${Math.abs(canvas.height - canvasContainerR.height) / 2}px`;
+    canvas.style.borderLeftWidth = fillingBorderWidth;
+    canvas.style.borderRightWidth = fillingBorderWidth;
+    canvas.style.borderTopWidth = fillingBorderHeight;
+    canvas.style.borderBottomWidth = fillingBorderHeight;
 
-    let rows = Math.floor(canvas.height / divWidth);
-    let cols = Math.floor(canvas.width / divWidth);
-    // console.log(canvas.height / divWidth, canvas.height, rows * divWidth);
+    let rows = Math.floor(canvas.height / pixelSize);
+    let cols = Math.floor(canvas.width / pixelSize);
+
     grid.setGridSize(rows, cols);
 }
 
@@ -194,21 +230,21 @@ function handleKeys(e) {
     if (grid.runningPathfinding) return;
 
     // algo
-    if (e.type === "keydown" && e.key === " ") {
-        // check ready for algo
-        if (!grid.startPixel || !grid.endPixel) {
-            alert("need to set start & end");
-            return;
-        }
-
-        const algo = getSelectedAlgo();
-        startPathfinding(algo);
-    }
+    if (e.type === "keydown" && e.key === " ") startPathfinding();
 }
 
 const lerp = (a, b, progress) => (1 - progress) * a + progress * b;
 
-async function startPathfinding(algo) {
+async function startPathfinding() {
+    clearInfoDisplay();
+
+    // check ready for algo
+    if (!grid.startPixel || !grid.endPixel) {
+        showErrorMsg("You need to have a starting point and an ending point at the least !");
+        return;
+    }
+
+    const algo = getSelectedAlgo();
     grid.algoSpeed = getAlgoSpeed();
 
     let algoResults = null;
@@ -247,11 +283,6 @@ async function startPathfinding(algo) {
     if (found) {
         const path = reconstructPath(grid);
 
-        // paint path pixels
-        // for (const pixel of path) {
-        //     pixel.type = CellType.PATH;
-        // }
-
         // summon trail effect along path
         for (let i = 0; i < path.length - 1; i++) {
             // stop trail animation on clear
@@ -272,8 +303,8 @@ async function startPathfinding(algo) {
             first.type = CellType.PATH;
         }
 
-        console.log("total visited nodes:", visited.length);
-        console.log("path length:", path.length + 2); // count start & end too
-        console.log("algoRes:", algoResults);
+        showInfoMsg(`Path found !`);
+        showInfoMsg(`Path length: ${path.length + 2}`); // count start & end too
+        showInfoMsg(`Total visited nodes: ${visited.length}`);
     }
 }
